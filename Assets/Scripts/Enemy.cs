@@ -5,6 +5,10 @@ using UnityEngine;
 public class Enemy : MonoBehaviour
 {
     public float speed = 3f;
+
+    [SerializeField] private float attackDamage = 10f;
+    [SerializeField] private float attackSpeed = 1f;
+    private float canAttack;
     private Transform target;
 
     private void Update()
@@ -14,6 +18,19 @@ public class Enemy : MonoBehaviour
             float step = speed * Time.deltaTime;
             transform.position = Vector2.MoveTowards(transform.position, target.position, step);
         }
+    }
+
+    private void OnCollisionStay2D(Collision2D other)
+    {
+        if (other.gameObject.tag == "Player") {
+            if (attackDamage <= canAttack){
+                other.gameObject.GetComponent<PlayerHealth>().UpdatedHealth(-attackDamage);
+                canAttack = 0f;
+            }
+            else{
+                canAttack += Time.deltaTime;
+            }
+        }  
     }
 
     private void OnTriggerEnter2D(Collider2D other)
