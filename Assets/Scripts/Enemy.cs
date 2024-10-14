@@ -22,15 +22,27 @@ public class Enemy : MonoBehaviour
 
     private void OnCollisionStay2D(Collision2D other)
     {
-        if (other.gameObject.tag == "Player") {
-            if (attackSpeed <= canAttack){
-                other.gameObject.GetComponent<PlayerHealth>().UpdatedHealth(-attackDamage);
+        if (other.gameObject.CompareTag("Player"))
+        {
+            // Check if the attack timer has reached the attack speed threshold
+            if (canAttack >= attackSpeed)
+            {
+                // Get the PlayerHealth component from the player and deal damage
+                PlayerHealth playerHealth = other.gameObject.GetComponent<PlayerHealth>();
+                if (playerHealth != null)
+                {
+                    playerHealth.UpdatedHealth(-attackDamage);  // Apply damage to the player
+                }
+
+                // Reset the attack timer
                 canAttack = 0f;
             }
-            else{
+            else
+            {
+                // Increment the attack timer by the time that has passed since the last frame
                 canAttack += Time.deltaTime;
             }
-        }  
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D other)
