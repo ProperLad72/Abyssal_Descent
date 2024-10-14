@@ -23,7 +23,7 @@ public class Enemy : MonoBehaviour
     private void OnCollisionStay2D(Collision2D other)
     {
         if (other.gameObject.tag == "Player") {
-            if (attackDamage <= canAttack){
+            if (attackSpeed <= canAttack){
                 other.gameObject.GetComponent<PlayerHealth>().UpdatedHealth(-attackDamage);
                 canAttack = 0f;
             }
