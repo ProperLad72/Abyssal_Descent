@@ -1,23 +1,31 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class Transitions : MonoBehaviour
 {
-     // Name of the scene to load
-    [SerializeField] private string Secondfloor;
+    [SerializeField] private string secondFloorSceneName = "Secondfloor";  // Ensure the correct scene name
 
-    // Trigger event to check when player enters the collider
     private void OnTriggerEnter2D(Collider2D other)
     {
-        // Check if the object entering the trigger is tagged "Player"
         if (other.CompareTag("Player"))
         {
-            // Load the specified target scene
+            // Start the scene transition coroutine
+            StartCoroutine(TransitionToNewScene());
+        }
+    }
+
+    private IEnumerator TransitionToNewScene()
+    {
+        if (string.IsNullOrEmpty(secondFloorSceneName)) 
+        {
+            Debug.LogError("Scene name is empty or null! Please set it in the Inspector.");
+        }
+        else
+        {
+            Debug.Log("Attempting to load scene: " + secondFloorSceneName);
+            yield return SceneManager.LoadSceneAsync(secondFloorSceneName);
             SceneManager.UnloadSceneAsync("MainScene");
-            SceneManager.LoadScene(Secondfloor);
-             
         }
     }
 }
