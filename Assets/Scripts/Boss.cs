@@ -2,42 +2,22 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Enemy : MonoBehaviour
+public class Boss : MonoBehaviour
 {
     public float speed = 3f;
-    public float directionChangeInterval = 2f;
-    public float attackDamage = 10f;
-    public float attackSpeed = 1f;
-    
-    private float canAttack;
-    private Vector2 moveDirection;
-    private float directionChangeTimer;
 
-    private void Start()
-    {
-        ChooseNewDirection();
-    }
+    [SerializeField] private float attackDamage = 20f;
+    [SerializeField] private float attackSpeed = 1.5f;
+    private float canAttack;
+    private Transform target;
 
     private void Update()
     {
-        // Update the position of the enemy based on the chosen direction
-        float step = speed * Time.deltaTime;
-        transform.position += (Vector3)moveDirection * step;
-
-        // Update the timer and change direction if needed
-        directionChangeTimer += Time.deltaTime;
-        if (directionChangeTimer >= directionChangeInterval)
+        if (target != null)
         {
-            ChooseNewDirection();
-            directionChangeTimer = 0f;
+            float step = speed * Time.deltaTime;
+            transform.position = Vector2.MoveTowards(transform.position, target.position, step);
         }
-    }
-
-    private void ChooseNewDirection()
-    {
-        // Choose a random direction for the enemy to move in
-        float angle = Random.Range(0f, 360f);
-        moveDirection = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)).normalized;
     }
 
     private void OnCollisionStay2D(Collision2D other)
@@ -62,6 +42,24 @@ public class Enemy : MonoBehaviour
                 // Increment the attack timer by the time that has passed since the last frame
                 canAttack += Time.deltaTime;
             }
+        }
+    }
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.gameObject.tag == "Player")
+        {
+            target = other.transform;
+
+        }
+    }
+
+    private void OnTriggerExit2D(Collider2D other)
+    {
+        if (other.gameObject.tag == "Player")
+        {
+            target = null;
+
         }
     }
 }
