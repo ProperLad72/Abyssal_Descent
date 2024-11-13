@@ -4,8 +4,11 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
+    [Header("Movement Settings")]
     public float speed = 3f;
 
+    [Header("Combat Settings")]
+    public int health = 3;                // Enemy health
     [SerializeField] private float attackDamage = 10f;
     [SerializeField] private float attackSpeed = 1f;
     private float canAttack;
@@ -13,6 +16,7 @@ public class Enemy : MonoBehaviour
 
     private void Update()
     {
+        // Move toward the player if in range
         if (target != null)
         {
             float step = speed * Time.deltaTime;
@@ -47,19 +51,37 @@ public class Enemy : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.gameObject.tag == "Player")
+        if (other.CompareTag("Player"))
         {
             target = other.transform;
-
         }
     }
 
     private void OnTriggerExit2D(Collider2D other)
     {
-        if (other.gameObject.tag == "Player")
+        if (other.CompareTag("Player"))
         {
             target = null;
-
         }
+    }
+
+    // Method to take damage from player's attack
+    public void TakeDamage(int damage)
+    {
+        health -= damage;
+        Debug.Log("Enemy took " + damage + " damage. Health remaining: " + health);
+
+        if (health <= 0)
+        {
+            Die();
+        }
+    }
+
+    // Method to destroy the enemy when health reaches zero
+    private void Die()
+    {
+        Debug.Log("Enemy died!");
+        // Add death animation or sound effects here if needed
+        Destroy(gameObject); // Remove enemy from scene
     }
 }
