@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 
 public class Transitions : MonoBehaviour
 {
-    [SerializeField] private string secondFloorSceneName = "Secondfloor";  // Ensure the correct scene name
+    [SerializeField] private string secondFloorSceneName = "Secondfloor";  // Set this to your actual scene name in the Inspector
 
     private void OnTriggerEnter2D(Collider2D other)
     {
