@@ -53,22 +53,47 @@ public class PlayerCombat : MonoBehaviour
 
     void Attack()
     {
-        // Visualize or animate the attack if needed
-        Debug.Log("Player attacks!");
+        if (attackPoint == null)
+        {
+            Debug.LogError("AttackPoint is not assigned!");
+            return;
+        }
 
-        // Show the attack visual for a brief moment
+        if (attackVisualizer == null)
+        {
+            Debug.LogError("AttackVisualizer is not assigned!");
+            return;
+        }
+
+        Debug.Log("Player attacks!");
         ShowAttackVisualizer();
 
-        // Detect enemies within range of the attack point
         Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(attackPoint.position, attackRange, enemyLayers);
 
-        // Damage each enemy hit
         foreach (Collider2D enemy in hitEnemies)
         {
-            Debug.Log("Hit " + enemy.name);
-            enemy.GetComponent<Enemy>().TakeDamage(attackDamage);
+            // Try to find an Enemy script
+            Enemy enemyScript = enemy.GetComponent<Enemy>();
+            if (enemyScript != null)
+            {
+                enemyScript.TakeDamage(attackDamage);
+                Debug.Log($"Hit {enemy.name} for {attackDamage} damage!");
+                continue;
+            }
+
+            // Try to find a Boss script
+            BossPong bossScript = enemy.GetComponent<BossPong>();
+            if (bossScript != null)
+            {
+                bossScript.TakeDamage(attackDamage);
+                Debug.Log($"Hit {enemy.name} (Boss) for {attackDamage} damage!");
+                continue;
+            }
+
+            Debug.LogWarning($"'{enemy.name}' does not have an Enemy or Boss component attached.");
         }
     }
+
 
     // Show the attack visual (e.g., a circle or cross)
     void ShowAttackVisualizer()

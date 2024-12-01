@@ -9,6 +9,8 @@ public class PlayerHealth : MonoBehaviour
     [SerializeField] public float maxHealth = 100f;
     private bool godMode = false;  // Flag to check if God Mode is active
 
+    public DamageFlash damageFlash; // Reference to the DamageFlash component
+
     private void Start()
     {
         health = maxHealth;  // Initialize health to the maximum value
@@ -48,6 +50,11 @@ public class PlayerHealth : MonoBehaviour
         UpdateHealthBar();   // Update the health bar after the health change
         Canvas.ForceUpdateCanvases();  // Force immediate canvas update to reflect health change
         Debug.Log("Updated Health: " + health);  // Debug log to track health changes
+
+        if (mod < 0) // Flash the screen only when taking damage
+        {
+            damageFlash?.FlashScreen();  // Trigger screen flash effect
+        }
     }
 
     // Function to update the health bar based on the player's current health

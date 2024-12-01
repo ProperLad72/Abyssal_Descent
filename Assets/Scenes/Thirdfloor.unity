@@ -140,7 +140,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &64181748
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1560,6 +1560,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentFloor: 1
   exitPlaced: 0
+  playerHealth: 100
+  maxHealth: 100
 --- !u!4 &1768454102
 Transform:
   m_ObjectHideFlags: 0

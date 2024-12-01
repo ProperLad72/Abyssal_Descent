@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class BossSide : MonoBehaviour
 {
+    [Header("Boss Settings")]
     public Transform player; // Reference to the player's Transform
     public float patrolSpeed = 2f; // Speed for side-to-side movement
     public float chaseSpeed = 4f; // Speed when chasing the player
@@ -10,7 +11,7 @@ public class BossSide : MonoBehaviour
     public float attackDamage = 20f; // Damage dealt to the player
     public float attackCooldown = 1f; // Cooldown time between attacks
 
-    public int health = 100; //Boss's initial health
+    public int health = 100; // Boss's initial health
     public Transform exitSpawnPoint; // Location to spawn the exit
     public GameObject exitPrefab; // The exit prefab to instantiate
 
@@ -106,25 +107,11 @@ public class BossSide : MonoBehaviour
     public void TakeDamage(int damage)
     {
         health -= damage;
-        Debug.Log($"Enemy takes {damage} damage! Remaining health: {health}");
+        Debug.Log($"Boss takes {damage} damage! Remaining health: {health}");
 
-        if(health <= 0)
+        if (health <= 0)
         {
             Die();
-        }
-    }
-
-    private void OnDrawGizmosSelected()
-    {
-        // Draw aggro range in the editor
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, aggroRange);
-
-        // Draw the exit spawn point for debugging
-        if (exitSpawnPoint != null)
-        {
-            Gizmos.color = Color.green;
-            Gizmos.DrawSphere(exitSpawnPoint.position, 0.2f);
         }
     }
 
@@ -141,7 +128,21 @@ public class BossSide : MonoBehaviour
         {
             Debug.LogError("ExitPrefab or ExitSpawnPoint is not assigned!");
         }
-        Debug.Log("Boss dies!");
+
         Destroy(gameObject); // Destroy the boss
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        // Draw aggro range in the editor
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, aggroRange);
+
+        // Draw the exit spawn point for debugging
+        if (exitSpawnPoint != null)
+        {
+            Gizmos.color = Color.green;
+            Gizmos.DrawSphere(exitSpawnPoint.position, 0.2f);
+        }
     }
 }
