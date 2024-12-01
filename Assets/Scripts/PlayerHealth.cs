@@ -1,13 +1,13 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;  // Added for scene management
 
 public class PlayerHealth : MonoBehaviour
 {
     public Image healthBar;  // Reference to the health bar fill image
-    public float health = 0f;
+    public float health = 100f;
     [SerializeField] public float maxHealth = 100f;
+    private bool godMode = false;  // Flag to check if God Mode is active
 
     private void Start()
     {
@@ -15,8 +15,21 @@ public class PlayerHealth : MonoBehaviour
         UpdateHealthBar();   // Ensure the health bar is updated at the start
     }
 
+    private void Update()
+    {
+        // Toggle God Mode with the 'G' key
+        if (Input.GetKeyDown(KeyCode.G))
+        {
+            godMode = !godMode;  // Toggle God Mode on/off
+            Debug.Log("God Mode: " + (godMode ? "Activated" : "Deactivated"));
+        }
+    }
+
     public void UpdatedHealth(float mod)
     {
+        // If God Mode is active, ignore health changes (i.e., no damage)
+        if (godMode) return;
+
         // Update health based on the modifier (positive or negative)
         health += mod;
 
@@ -29,9 +42,12 @@ public class PlayerHealth : MonoBehaviour
         {
             health = 0f;
             Debug.Log("Player Respawn");  // Implement respawn logic here if needed
+            TeleportToMainScene();  // Teleport player to MainScene
         }
 
         UpdateHealthBar();   // Update the health bar after the health change
+        Canvas.ForceUpdateCanvases();  // Force immediate canvas update to reflect health change
+        Debug.Log("Updated Health: " + health);  // Debug log to track health changes
     }
 
     // Function to update the health bar based on the player's current health
@@ -51,7 +67,7 @@ public class PlayerHealth : MonoBehaviour
             // Optionally, change the health bar color based on the percentage of health
             if (fillAmount > 0.5f)
             {
-                healthBar.color = new Color(0f, 0.58f, 0f);// Healthy color
+                healthBar.color = new Color(0f, 0.58f, 0f); // Healthy color
             }
             else if (fillAmount > 0.2f)
             {
@@ -62,5 +78,12 @@ public class PlayerHealth : MonoBehaviour
                 healthBar.color = Color.red;    // Critical health color
             }
         }
+    }
+
+    // Teleport the player to the MainScene
+    private void TeleportToMainScene()
+    {
+        // Load the MainScene (ensure it's added to Build Settings)
+        SceneManager.LoadScene("MainScene");
     }
 }

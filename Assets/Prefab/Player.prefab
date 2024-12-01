@@ -264,7 +264,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   healthBar: {fileID: 0}
-  health: 0
+  health: 100
   maxHealth: 100
 --- !u!114 &2828828842587656335
 MonoBehaviour:
@@ -285,7 +285,7 @@ MonoBehaviour:
     m_Bits: 64
   attackPoint: {fileID: 4052521071588690065}
   attackVisualizer: {fileID: 1912364323081287768}
-  attackVisualDuration: 0.2
+  attackCooldown: 0.5
 --- !u!1 &5587283944437371776
 GameObject:
   m_ObjectHideFlags: 0

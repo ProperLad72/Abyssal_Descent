@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Enemy : MonoBehaviour
@@ -8,57 +6,66 @@ public class Enemy : MonoBehaviour
     public float speed = 3f;
 
     [Header("Combat Settings")]
-    public int health = 3;                // Enemy health
+    public int health = 3; // Enemy health
     [SerializeField] private float attackDamage = 10f;
-    [SerializeField] private float attackSpeed = 1f;
-    private float canAttack;
-    private Transform target;
+    [SerializeField] private float attackSpeed = 1f; // Time between attacks
+    private float attackCooldown = 0f; // Timer for attack frequency
+    private Transform target; // Player target
 
     private Rigidbody2D rb;
     private SpriteRenderer spriteRenderer;
 
     private void Awake()
     {
-        rb = gameObject.AddComponent<Rigidbody2D>(); // Add Rigidbody2D if missing
+        rb = GetComponent<Rigidbody2D>();
+        if (rb == null)
+        {
+            rb = gameObject.AddComponent<Rigidbody2D>(); // Add Rigidbody2D if missing
+        }
+
         spriteRenderer = GetComponent<SpriteRenderer>();
 
         // Configure Rigidbody2D
-        rb.gravityScale = 0; // No gravity for 2D movement
+        rb.bodyType = RigidbodyType2D.Dynamic;
+        rb.gravityScale = 0; // Disable gravity
         rb.constraints = RigidbodyConstraints2D.FreezeRotation; // Prevent rotation
-
-        // Set sorting layer for correct rendering
-        if (spriteRenderer != null)
-        {
-            spriteRenderer.sortingOrder = 2; // Ensure enemies render above floors
-        }
+        rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
     }
 
     private void FixedUpdate()
     {
-        // Move toward the player if a target exists
         if (target != null)
         {
+            // Calculate direction toward the target
             Vector2 direction = ((Vector2)target.position - rb.position).normalized;
-            rb.MovePosition(rb.position + direction * speed * Time.fixedDeltaTime);
+            rb.velocity = direction * speed; // Set velocity toward the target
+        }
+        else
+        {
+            rb.velocity = Vector2.zero; // Stop moving if no target
         }
     }
 
-    private void OnCollisionStay2D(Collision2D other)
+    private void Update()
     {
-        if (other.gameObject.CompareTag("Player"))
+        // Update attack cooldown
+        if (attackCooldown > 0f)
         {
-            if (canAttack >= attackSpeed)
+            attackCooldown -= Time.deltaTime;
+        }
+    }
+
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("Player"))
+        {
+            PlayerHealth playerHealth = collision.gameObject.GetComponent<PlayerHealth>();
+            if (playerHealth != null && attackCooldown <= 0f)
             {
-                PlayerHealth playerHealth = other.gameObject.GetComponent<PlayerHealth>();
-                if (playerHealth != null)
-                {
-                    playerHealth.UpdatedHealth(-attackDamage);
-                }
-                canAttack = 0f;
-            }
-            else
-            {
-                canAttack += Time.deltaTime;
+                playerHealth.UpdatedHealth(-attackDamage); // Deal damage to the player
+                Debug.Log($"Enemy attacks! Player Health: {playerHealth.health}");
+
+                attackCooldown = attackSpeed; // Reset attack cooldown
             }
         }
     }
@@ -67,7 +74,8 @@ public class Enemy : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            target = other.transform;
+            target = other.transform; // Set player as the target
+            Debug.Log("Player detected. Enemy starts chasing.");
         }
     }
 
@@ -75,13 +83,16 @@ public class Enemy : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            target = null;
+            target = null; // Stop chasing the player
+            Debug.Log("Player exited range. Enemy stops chasing.");
         }
     }
 
     public void TakeDamage(int damage)
     {
-        health -= damage;
+        health -= damage; // Reduce enemy health
+        Debug.Log($"Enemy takes {damage} damage! Remaining health: {health}");
+
         if (health <= 0)
         {
             Die();
@@ -90,6 +101,7 @@ public class Enemy : MonoBehaviour
 
     private void Die()
     {
-        Destroy(gameObject);
+        Debug.Log("Enemy dies!");
+        Destroy(gameObject); // Destroy the enemy object
     }
 }
