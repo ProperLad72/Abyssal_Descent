@@ -2,20 +2,26 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    public static GameManager Instance;  // Singleton instance
-    public bool exitPlaced = false;      // Tracks if the exit has been placed
+    public static GameManager Instance;
+    public int currentFloor = 0; // Start at floor 1
+    public bool exitPlaced = false;
 
     private void Awake()
     {
-        // Ensure there's only one instance of the GameManager
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject);  // Keep the GameManager across scenes
+            DontDestroyOnLoad(gameObject); // Persist between scenes
         }
         else
         {
-            Destroy(gameObject);  // Destroy duplicate GameManager instances
+            Destroy(gameObject);
         }
+    }
+
+    public void GoToNextFloor()
+    {
+        currentFloor++;
+        exitPlaced = false; // Reset the exit placement for the new floor
     }
 }

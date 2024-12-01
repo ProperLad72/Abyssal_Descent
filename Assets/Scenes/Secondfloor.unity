@@ -944,6 +944,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 09a8e97d28f7b844b9025552daa39e84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentFloor: 1
   exitPlaced: 0
 --- !u!4 &1260600843
 Transform:
@@ -1416,10 +1417,20 @@ MonoBehaviour:
   floorPrefab: {fileID: 3503580664708262265, guid: b3973fb7863af7c4daad7275809521a0, type: 3}
   playerPrefab: {fileID: 4176340302886752060, guid: d92ba4753250d31419563408c36ad9bc, type: 3}
   exitPrefab: {fileID: 1254793271480374065, guid: 19549e832d8dab0439b2906f9693e83d, type: 3}
+  enemyPrefab: {fileID: 4511819237718477328, guid: 8a313c383c48a664890eb8672aacf077, type: 3}
   gridWidth: 40
   gridHeight: 40
   numberOfRooms: 10
   corridorWidth: 3
+  numberOfEnemies: 5
+  floorScenes:
+  - Tutorial
+  - MainScene
+  - Secondfloor
+  - Thirdfloor
+  - Fourthfloor
+  - Bossfloor
+  currentFloorIndex: 2
 --- !u!4 &1448172599
 Transform:
   m_ObjectHideFlags: 0

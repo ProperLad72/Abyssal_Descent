@@ -8,19 +8,51 @@ public class DungeonManager : MonoBehaviour
     public GameObject floorPrefab;      // Floor tile prefab
     public GameObject playerPrefab;     // Player prefab
     public GameObject exitPrefab;       // Exit prefab
+    public GameObject enemyPrefab;      // Enemy prefab
 
     // Grid settings
     public int gridWidth = 50;
     public int gridHeight = 50;
     public int numberOfRooms = 5;
     public int corridorWidth = 3; // Width of corridors
+    public int numberOfEnemies = 5; // Number of enemies to spawn
 
+    public string[] floorScenes = {"Tutorial","MainScene","Secondfloor","Thirdfloor","Fourthfloor","Bossfloor"};
+
+    public int currentFloorIndex = 1;
     private bool[,] grid; // Tracks grid occupancy
 
-    
     private List<Vector2Int> roomCenters = new List<Vector2Int>(); // Store room centers for corridor connections
 
     private static DungeonManager instance;
+
+    public void LoadNextFloor()
+    {
+        if (currentFloorIndex < floorScenes.Length - 1)
+        {
+            currentFloorIndex++;
+            string nextScene = floorScenes[currentFloorIndex];
+            UnityEngine.SceneManagement.SceneManager.LoadScene(nextScene);
+        }
+        else
+        {
+            Debug.Log("You've reached the final floor!");
+        }
+    }
+
+    public void LoadPreviousFloor()
+    {
+        if (currentFloorIndex > 0)
+        {
+            currentFloorIndex--;
+            string previousScene = floorScenes[currentFloorIndex];
+            UnityEngine.SceneManagement.SceneManager.LoadScene(previousScene);
+        }
+        else
+        {
+            Debug.Log("You are already on the first floor!");
+        }
+    }
 
     private void Awake()
     {
@@ -28,21 +60,29 @@ public class DungeonManager : MonoBehaviour
         {
             instance = this;
         }
-        else{
+        else
+        {
             Destroy(gameObject);
         }
     }
+
     void Start()
     {
         // Initialize the grid
         grid = new bool[gridWidth, gridHeight];
 
         // Generate the dungeon
-        GenerateDungeon();
+        
+        //if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "TutorialFloor")
+        //{
+        GenerateDungeon(); // Call your dungeon generation code
+        //}
     }
 
-    void GenerateDungeon()
+    public void GenerateDungeon()
     {
+
+        
         // Step 1: Place rooms
         PlaceRooms();
 
@@ -57,7 +97,12 @@ public class DungeonManager : MonoBehaviour
 
         // Step 5: Place the exit (optional)
         PlaceExit();
+
+        // Step 6: Spawn enemies
+        SpawnEnemies();
     }
+
+    
 
     void PlaceRooms()
     {
@@ -86,7 +131,6 @@ public class DungeonManager : MonoBehaviour
                 for (int y = roomY; y < roomY + roomHeight; y++)
                 {
                     Instantiate(floorPrefab, new Vector3(x, y, 0), Quaternion.identity);
-                   // Instantiate(exitPrefab, new Vector3(x, y, -1), Quaternion.identity);
                 }
             }
         }
@@ -102,44 +146,44 @@ public class DungeonManager : MonoBehaviour
     }
 
     void CreateCorridor(Vector2Int start, Vector2Int end)
-{
-    int x = start.x;
-    int y = start.y;
-
-    // Loop until we reach the destination
-    while (x != end.x || y != end.y)
     {
-        // Carve out a corridor (leave space for walls around)
-        for (int dx = -corridorWidth / 2; dx <= corridorWidth / 2; dx++)
-        {
-            for (int dy = -corridorWidth / 2; dy <= corridorWidth / 2; dy++)
-            {
-                int nx = x + dx;
-                int ny = y + dy;
+        int x = start.x;
+        int y = start.y;
 
-                // Ensure it's within bounds and mark as floor
-                if (nx >= 0 && ny >= 0 && nx < gridWidth && ny < gridHeight)
+        // Loop until we reach the destination
+        while (x != end.x || y != end.y)
+        {
+            // Carve out a corridor (leave space for walls around)
+            for (int dx = -corridorWidth / 2; dx <= corridorWidth / 2; dx++)
+            {
+                for (int dy = -corridorWidth / 2; dy <= corridorWidth / 2; dy++)
                 {
-                    grid[nx, ny] = true; // Mark as floor
-                    Instantiate(floorPrefab, new Vector3(nx, ny, 0), Quaternion.identity);
+                    int nx = x + dx;
+                    int ny = y + dy;
+
+                    // Ensure it's within bounds and mark as floor
+                    if (nx >= 0 && ny >= 0 && nx < gridWidth && ny < gridHeight)
+                    {
+                        grid[nx, ny] = true; // Mark as floor
+                        Instantiate(floorPrefab, new Vector3(nx, ny, 0), Quaternion.identity);
+                    }
                 }
             }
+
+            // Place walls around the current position
+            PlaceWallsAround(x, y);
+
+            // Move towards the destination
+            if (x < end.x) x++;
+            else if (x > end.x) x--;
+
+            if (y < end.y) y++;
+            else if (y > end.y) y--;
         }
 
-        // Place walls around the current position
-        PlaceWallsAround(x, y);
-
-        // Move towards the destination
-        if (x < end.x) x++;
-        else if (x > end.x) x--;
-
-        if (y < end.y) y++;
-        else if (y > end.y) y--;
+        // Ensure the final destination has walls around it
+        PlaceWallsAround(end.x, end.y);
     }
-
-    // Ensure the final destination has walls around it
-    PlaceWallsAround(end.x, end.y);
-}
 
     void PlaceWallsAround(int x, int y)
     {
@@ -165,42 +209,22 @@ public class DungeonManager : MonoBehaviour
     }
 
     void FillEmptySpaces()
-{
-    for (int x = 0; x < gridWidth; x++)
     {
-        for (int y = 0; y < gridHeight; y++)
+        for (int x = 0; x < gridWidth; x++)
         {
-            // Place walls if the cell is unoccupied (i.e., not a floor or corridor)
-            if (!grid[x, y]) // If the cell is empty
+            for (int y = 0; y < gridHeight; y++)
             {
-                Instantiate(wallPrefab, new Vector3(x, y, 0), Quaternion.identity);
-                grid[x, y] = false; // Mark as a wall
-            }
-        }
-    }
-
-    // After filling in empty spaces, add boundary walls
-    PlaceBoundaryWalls();
-}
-
-    bool IsAdjacentToFloor(int x, int y)
-    {
-        // Check all adjacent tiles in the 4 cardinal directions
-        int[] dx = { 0, 1, 0, -1 };
-        int[] dy = { 1, 0, -1, 0 };
-
-        for (int i = 0; i < 4; i++)
-        {
-            int nx = x + dx[i];
-            int ny = y + dy[i];
-
-            if (nx >= 0 && ny >= 0 && nx < gridWidth && ny < gridHeight && grid[nx, ny])
-            {
-                return true; // Adjacent to a floor
+                // Place walls if the cell is unoccupied (i.e., not a floor or corridor)
+                if (!grid[x, y]) // If the cell is empty
+                {
+                    Instantiate(wallPrefab, new Vector3(x, y, 0), Quaternion.identity);
+                    grid[x, y] = false; // Mark as a wall
+                }
             }
         }
 
-        return false;
+        // After filling in empty spaces, add boundary walls
+        PlaceBoundaryWalls();
     }
 
     void PlaceBoundaryWalls()
@@ -209,36 +233,24 @@ public class DungeonManager : MonoBehaviour
     for (int x = 0; x < gridWidth; x++)
     {
         // Bottom boundary
-        if (!grid[x, 0]) 
-        {
-            Instantiate(wallPrefab, new Vector3(x, 0, 0), Quaternion.identity);
-            grid[x, 0] = false;
-        }
+        Instantiate(wallPrefab, new Vector3(x, 0, 0), Quaternion.identity);
+        grid[x, 0] = false;
 
         // Top boundary
-        if (!grid[x, gridHeight - 1])
-        {
-            Instantiate(wallPrefab, new Vector3(x, gridHeight - 1, 0), Quaternion.identity);
-            grid[x, gridHeight - 1] = false;
-        }
+        Instantiate(wallPrefab, new Vector3(x, gridHeight - 1, 0), Quaternion.identity);
+        grid[x, gridHeight - 1] = false;
     }
 
     // Left and right boundaries
     for (int y = 0; y < gridHeight; y++)
     {
         // Left boundary
-        if (!grid[0, y])
-        {
-            Instantiate(wallPrefab, new Vector3(0, y, 0), Quaternion.identity);
-            grid[0, y] = false;
-        }
+        Instantiate(wallPrefab, new Vector3(0, y, 0), Quaternion.identity);
+        grid[0, y] = false;
 
         // Right boundary
-        if (!grid[gridWidth - 1, y])
-        {
-            Instantiate(wallPrefab, new Vector3(gridWidth - 1, y, 0), Quaternion.identity);
-            grid[gridWidth - 1, y] = false;
-        }
+        Instantiate(wallPrefab, new Vector3(gridWidth - 1, y, 0), Quaternion.identity);
+        grid[gridWidth - 1, y] = false;
     }
 }
 
@@ -263,44 +275,37 @@ public class DungeonManager : MonoBehaviour
         }
     }
 
-   
     void PlaceExit()
-{
-    Debug.Log("PlaceExit called");
-
-    if (GameManager.Instance == null)
     {
-        Debug.LogError("GameManager.Instance is null! Ensure GameManager exists in the scene.");
-        return;
+        if (roomCenters.Count > 1)
+        {
+            Vector3 exitPosition = new Vector3(roomCenters[roomCenters.Count - 1].x, roomCenters[roomCenters.Count - 1].y, -1);
+            Instantiate(exitPrefab, exitPosition, Quaternion.identity);
+        }
+        else
+        {
+            Debug.LogError("Not enough rooms to place an exit!");
+        }
     }
 
-    if (GameManager.Instance.exitPlaced)
+    void SpawnEnemies()
     {
-        Debug.Log("Exit already placed. Skipping placement.");
-        return;
-    }
+        // Spawn enemies at random positions in the dungeon
+        int spawnedEnemies = 0;
+        while (spawnedEnemies < numberOfEnemies)
+        {
+            // Randomly select a position on the grid
+            int x = Random.Range(1, gridWidth - 1); // Avoid boundaries
+            int y = Random.Range(1, gridHeight - 1);
 
-    if (GameObject.FindGameObjectWithTag("Exit") != null)
-    {
-        Debug.Log("An exit already exists in the scene. Skipping placement.");
-        GameManager.Instance.exitPlaced = true;
-        return;
+            // Check if the position is a floor (not a wall)
+            if (grid[x, y])
+            {
+                Instantiate(enemyPrefab, new Vector3(x, y, -3), Quaternion.identity);
+                spawnedEnemies++;
+            }
+        }
     }
-
-    if (roomCenters.Count > 1)
-    {
-        Debug.Log("Placing exit...");
-        Vector3 exitPosition = new Vector3(roomCenters[roomCenters.Count - 1].x, roomCenters[roomCenters.Count - 1].y, -1);
-        Instantiate(exitPrefab, exitPosition, Quaternion.identity);
-        Debug.Log("Exit instantiated at: " + exitPosition);
-
-        GameManager.Instance.exitPlaced = true;
-    }
-    else
-    {
-        Debug.LogError("Not enough rooms to place an exit!");
-    }
-}
 
     bool IsAreaOccupied(int startX, int startY, int width, int height)
     {
