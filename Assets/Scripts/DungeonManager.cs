@@ -151,6 +151,16 @@ public class DungeonManager : MonoBehaviour
             Vector3 spawnPosition = new Vector3(roomCenters[0].x, roomCenters[0].y, -1);
             GameObject playerInstance = Instantiate(playerPrefab, spawnPosition, Quaternion.identity);
 
+            // Scale the player to match other objects in the scene
+            playerInstance.transform.localScale = new Vector3(8f, 8f, 8f); // Adjust this value to match size
+
+            // Scale the CapsuleCollider2D component on the Player
+            CapsuleCollider2D playerCollider = playerInstance.GetComponent<CapsuleCollider2D>();
+            if (playerCollider != null)
+            {
+                playerCollider.size = new Vector2(0.2f, 0.2f); // Scale the collider to match the desired size
+            }
+
             var vcam = FindObjectOfType<Cinemachine.CinemachineVirtualCamera>();
             if (vcam != null)
             {
@@ -163,12 +173,16 @@ public class DungeonManager : MonoBehaviour
         }
     }
 
+
     void PlaceExit()
     {
         if (roomCenters.Count > 1)
         {
             Vector3 exitPosition = new Vector3(roomCenters[^1].x, roomCenters[^1].y, -1);
-            Instantiate(exitPrefab, exitPosition, Quaternion.identity);
+            GameObject exitInstance = Instantiate(exitPrefab, exitPosition, Quaternion.identity);
+
+            // Scale the exit to match other objects in the scene
+            exitInstance.transform.localScale = new Vector3(8f, 8f, 8f); // Adjust this value to match size
         }
     }
 
@@ -184,19 +198,18 @@ public class DungeonManager : MonoBehaviour
             {
                 GameObject enemyInstance = Instantiate(enemyPrefab, new Vector3(x, y, -0.5f), Quaternion.identity);
 
-                // Adjust sprite sorting order
+                // Adjust sprite sorting order and scale for enemies
                 SpriteRenderer spriteRenderer = enemyInstance.GetComponent<SpriteRenderer>();
                 if (spriteRenderer != null)
                 {
                     spriteRenderer.sortingOrder = 2; // Ensure enemies appear above the floor
+                    enemyInstance.transform.localScale = new Vector3(1f, 1f, 1f); // Adjust this value to match size
                 }
 
                 spawnedEnemies++;
             }
         }
     }
-
-
 
     bool IsAreaOccupied(int startX, int startY, int width, int height)
     {
