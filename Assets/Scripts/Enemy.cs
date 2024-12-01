@@ -14,13 +14,32 @@ public class Enemy : MonoBehaviour
     private float canAttack;
     private Transform target;
 
-    private void Update()
+    private Rigidbody2D rb;
+    private SpriteRenderer spriteRenderer;
+
+    private void Awake()
     {
-        // Move toward the player if in range
+        rb = gameObject.AddComponent<Rigidbody2D>(); // Add Rigidbody2D if missing
+        spriteRenderer = GetComponent<SpriteRenderer>();
+
+        // Configure Rigidbody2D
+        rb.gravityScale = 0; // No gravity for 2D movement
+        rb.constraints = RigidbodyConstraints2D.FreezeRotation; // Prevent rotation
+
+        // Set sorting layer for correct rendering
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.sortingOrder = 2; // Ensure enemies render above floors
+        }
+    }
+
+    private void FixedUpdate()
+    {
+        // Move toward the player if a target exists
         if (target != null)
         {
-            float step = speed * Time.deltaTime;
-            transform.position = Vector2.MoveTowards(transform.position, target.position, step);
+            Vector2 direction = ((Vector2)target.position - rb.position).normalized;
+            rb.MovePosition(rb.position + direction * speed * Time.fixedDeltaTime);
         }
     }
 
@@ -28,22 +47,17 @@ public class Enemy : MonoBehaviour
     {
         if (other.gameObject.CompareTag("Player"))
         {
-            // Check if the attack timer has reached the attack speed threshold
             if (canAttack >= attackSpeed)
             {
-                // Get the PlayerHealth component from the player and deal damage
                 PlayerHealth playerHealth = other.gameObject.GetComponent<PlayerHealth>();
                 if (playerHealth != null)
                 {
-                    playerHealth.UpdatedHealth(-attackDamage);  // Apply damage to the player
+                    playerHealth.UpdatedHealth(-attackDamage);
                 }
-
-                // Reset the attack timer
                 canAttack = 0f;
             }
             else
             {
-                // Increment the attack timer by the time that has passed since the last frame
                 canAttack += Time.deltaTime;
             }
         }
@@ -65,23 +79,17 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    // Method to take damage from player's attack
     public void TakeDamage(int damage)
     {
         health -= damage;
-        Debug.Log("Enemy took " + damage + " damage. Health remaining: " + health);
-
         if (health <= 0)
         {
             Die();
         }
     }
 
-    // Method to destroy the enemy when health reaches zero
     private void Die()
     {
-        Debug.Log("Enemy died!");
-        // Add death animation or sound effects here if needed
-        Destroy(gameObject); // Remove enemy from scene
+        Destroy(gameObject);
     }
 }
