@@ -1508,7 +1508,7 @@ MonoBehaviour:
   gridHeight: 40
   numberOfRooms: 10
   corridorWidth: 3
-  numberOfEnemies: 5
+  numberOfEnemies: 10
   floorScenes:
   - Tutorial
   - MainScene
